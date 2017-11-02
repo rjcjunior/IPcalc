@@ -173,7 +173,6 @@ def modoinfo(subrede, mascara): #Função para exibir o modo de informações
     print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(subrede),prefixoToMascara(mascara))))))
     #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
     print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(mascara)))))
-    print('  O Numero maximo de hosts é: ' + str(numhost(str(prefixoToMascara(mascara)))))
     
 def tamfixo(subrede, mascara, prefixo):
     cont = 1
@@ -288,5 +287,7 @@ finally: #Se for inteiro, vai vim p cá
           print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
           os._exit(1) #Sair do programa
         elif (escolhaMenu == 2):
-            tamfixo(subrede[0], subrede[1], tamprefixo)
+          tamfixo(subrede[0], subrede[1], tamprefixo)
+          print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
+          os._exit(1) #Sair do programa
         #else: Parte 3    
