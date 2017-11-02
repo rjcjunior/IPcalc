@@ -84,7 +84,7 @@ def validarprefixo(prefixo): #Função para fazer a validação do prefixo
         print ("Você não digitou um numero, vou cancelar isso")
         os._exit(1) #Sair do programa
 
-def validarmascara(mascara):
+def validarmascara(mascara): #Função para fazer a validação da mascara
     try:
         if( not verificarIPV4orMascara(subrede[1])): #Se não tiver no formato xxx.xxx.xxx.xxx e se os numeros estão abaixo de 0 ou acima de 255
             print("Essa mascara ta zoada")
@@ -97,31 +97,31 @@ def validarmascara(mascara):
 
 def primeiroEnd(sub): #Função para retornar o primeiro endereço atribuivel
     sub = sub.split('.') #Separar em blocos
-    if sub[3]<'255':
-        sub[3] = str(int(sub[3])+1)  
-    else:
-        sub[3] = str(0)
-        sub[2] = str(int(sub[2])+1)
-    aux = ''
-    for i in sub:
-        if aux != '':
+    if sub[3]!='255': #Se o ultimo bloco for menor que 255( Flag maximo)
+        sub[3] = str(int(sub[3])+1)  #Só somar mais um
+    else: #Se for 255
+        sub[3] = str(0) #O ultimo bloco vai ser 0 
+        sub[2] = str(int(sub[2])+1) #O terceiro bloco vai ser ele + 1
+    aux = '' #Auxiliar para o retorno
+    for i in sub: #Pecorrer todo a nova subrede
+        if aux != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
             aux += '.'
-        aux += i
+        aux += i #Agregar o bloco i a variavel de retorno
     return aux
 
 
 def ultimoEnd(mascara): #Função para retornar o ultimo endereço atribuivel
     mascara = mascara.split('.') #Separar em blocos
-    if mascara[3] == '0':
-        mascara[3] = str(255)
-        mascara[2] = str(int(mascara[2])-1)
-    else:
-        mascara[3] = str(int(mascara[3])-1)
-    aux = ''
-    for i in mascara:
-        if aux != '':
+    if mascara[3] == '0': #Se o ultimo bloco for 0 (Flag minimo)
+        mascara[3] = str(255) #Colocar 255 no terceiro bloco
+        mascara[2] = str(int(mascara[2])-1) #Diminuir o segundo bloco em 1
+    else:#Se não for 0 
+        mascara[3] = str(int(mascara[3])-1) #Só dimunir 1 valor
+    aux = '' #Auxiliar para o retorno
+    for i in mascara:  #Pecorrer todo a nova subrede
+        if aux != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
             aux += '.'
-        aux += i
+        aux += i #Agregar o bloco i a variavel de retorno
     return aux
 
 def broadcast(sub, mascara):
@@ -145,10 +145,88 @@ def broadcast(sub, mascara):
         cont+= 1
     return retorno    
 
-def maxend (mascara):
-    aux = mascara.count('0')
-    return (2**(int(aux))-2)
+def maxend (mascara): #Retornar o numero maximo de endereços atribuives
+    aux = mascara.count('0') #contar o numeros de 0 na mascara
+    return (2**(int(aux))-2) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives
+
+def modoinfo(subrede, mascara): #Função para exibir o modo de informações
+    #O endereço de sub-rede (em notação decimal e em binário).
+    print('')        
+    print('  O Endereço da sub-rede em decimal é: ' + endprincipal(subrede,bintodecEnd(prefixoToMascara(mascara))))
+    print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(endprincipal(subrede,bintodecEnd(prefixoToMascara(mascara)))))
+    #O endereço de broadcast (em notação decimal e em binário).
+    print('')
+    print('  O Endereço broadcast em decimal é: ' + bintodecEnd(broadcast(dectobinEnd(subrede),prefixoToMascara(mascara))))
+    print('  O Endereço broadcast em binario é: ' + broadcast(dectobinEnd(subrede),prefixoToMascara(mascara)))
+    #A máscara de sub-rede (em notação decimal e em binário).
+    print('')
+    print('  A Mascara da sub-rede em decimal é: ' + str(bintodecEnd(prefixoToMascara(mascara))))
+    print('  A Mascara da sub-rede em binario é: ' + str(prefixoToMascara(mascara)))
+    #O tamanho do prefixo da sub-rede.
+    print('')
+    print('  O Tamanho do prefixo da sub-rede é: ' + str(mascara))
+    #O primeiro (i.e., menor) endereço atribuível a uma interface (em notação decimal e em binário).
+    print('')
+    print('  O Primeiro endereço atribuivel é: ' + str(primeiroEnd(endprincipal(subrede,bintodecEnd(prefixoToMascara(mascara))))))
+    #O último (i.e., maior) endereço atribuível a uma interface (em notação decimal e em binário).
+    print('')
+    print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(subrede),prefixoToMascara(mascara))))))
+    #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
+    print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(mascara)))))
+    print('  O Numero maximo de hosts é: ' + str(numhost(str(prefixoToMascara(mascara)))))
     
+def tamfixo(subrede, mascara, prefixo):
+    cont = 1
+    newmaxend = maxend(prefixoToMascara(prefixo))
+    first = endprincipal(subrede,bintodecEnd(prefixoToMascara(mascara)))
+    while (cont <= numhost(str(prefixoToMascara(prefixo)))):
+        print("\n Subrede " + str(cont) +':')
+        print('  O Endereço da sub-rede em decimal é: ' + first)
+        print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(first))
+        #O endereço de broadcast (em notação decimal e em binário).
+        print('')
+        print('  O Endereço broadcast em decimal é: ' + bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(prefixo))))
+        print('  O Endereço broadcast em binario é: ' + broadcast(dectobinEnd(first),prefixoToMascara(prefixo)))
+        #A máscara de sub-rede (em notação decimal e em binário).
+        print('')
+        print('  A Mascara da sub-rede em decimal é: ' + str(bintodecEnd(prefixoToMascara(prefixo))))
+        print('  A Mascara da sub-rede em binario é: ' + str(prefixoToMascara(prefixo)))
+        #O tamanho do prefixo da sub-rede.
+        print('')
+        print('  O Tamanho do prefixo da sub-rede é: ' + str(prefixo))
+        #O primeiro (i.e., menor) endereço atribuível a uma interface (em notação decimal e em binário).
+        print('')
+        print('  O Primeiro endereço atribuivel é: ' + str(primeiroEnd(first)))
+        #O último (i.e., maior) endereço atribuível a uma interface (em notação decimal e em binário).
+        print('')
+        print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(prefixo))))))
+        #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
+        print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(prefixo)))))
+        aux2 = ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(prefixo)))).split('.')
+        if aux2[3]!='255': #Se o ultimo bloco for menor que 255( Flag maximo)
+            aux2[3] = str(int(aux2[3])+2)  #Só somar mais um
+        else: #Se for 255
+            aux2[3] = str(0) #O ultimo bloco vai ser 0 
+            aux2[2] = str(int(aux2[2])+1) #O terceiro bloco vai ser ele + 1
+        first = '' #Auxiliar para o retorno
+        for i in aux2: #Pecorrer todo a nova subrede
+            if first != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
+                first += '.'
+            first += i #Agregar o bloco i a variavel de retorno
+        cont+=1
+
+            
+def numhost(mascara):
+    mascara = mascara.split('.')
+    if '1' in mascara[3]:
+        aux = mascara[3].count('1') #contar o numeros de 0 na mascara
+        return (2**(int(aux))) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives    
+    else:
+        if '1' in mascara[2]:
+            aux = mascara[2].count('1') #contar o numeros de 0 na mascara
+            return (2**(int(aux))) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives    
+    return 2
+
 print('-----------------Menu-----------------')
 print('  1) Modo de Informações')
 print('  2) Modo de Divisão em Sub-redes de Tamanho Fixo')
@@ -184,20 +262,20 @@ finally: #Se for inteiro, vai vim p cá
         if(mascara): #Validar mascara
             validarmascara(subrede[1])
             subrede[1] = mascaraToPrefixo(dectobinEnd(subrede[1])) #Vamos trabalhar com Prefixo para ficar mais facil, por isso vamos traduzir a mascara para prefixo
+            validarprefixo(subrede[1])
         if(escolhaMenu == 2):
             tamprefixo = input("Insira um novo tamanho de prefixo, ou uma mascara de subrede: ")
-            prefixo2 = False
-            mascara2 = False
             if ('.' in tamprefixo):
                 if not (verificarIPV4orMascara(tamprefixo)):
                     print ("Esse formato não é permitido, vou cancelar isso")  
                     os._exit(1) #Sair do programa
                 tamprefixo = mascaraToPrefixo(dectobinEnd(tamprefixo)) #Vamos trabalhar com Prefixo para ficar mais facil, por isso vamos traduzir a mascara para prefixo
+                validarprefixo(tamprefixo)
             else:
                 if not(validarprefixo(tamprefixo)):
                     print ("Esse formato não é permitido, vou cancelar isso")  
                     os._exit(1) #Sair do programa
-            if (int(tamprefixo) > int(subrede[1])):
+            if (int(tamprefixo) < int(subrede[1])):
                     print ("Prefixo maior do que o prefixo da subrede original")  
                     os._exit(1) #Sair do programa
         '''
@@ -205,32 +283,10 @@ finally: #Se for inteiro, vai vim p cá
             FAZER VERIFICAÇÃO DA TERCEIRA ESCOLHA.
         '''
         #------ Fim das validações ------
-        #O endereço de sub-rede (em notação decimal e em binário).
-        print('')        
-        print('  O Endereço da sub-rede em decimal é: ' + endprincipal(subrede[0],bintodecEnd(prefixoToMascara(subrede[1]))))
-        print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(endprincipal(subrede[0],bintodecEnd(prefixoToMascara(subrede[1])))))
-        #O endereço de broadcast (em notação decimal e em binário).
-        print('')
-        print('  O Endereço broadcast em decimal é: ' + bintodecEnd(broadcast(dectobinEnd(subrede[0]),prefixoToMascara(subrede[1]))))
-        print('  O Endereço broadcast em binario é: ' + broadcast(dectobinEnd(subrede[0]),prefixoToMascara(subrede[1])))
-        #A máscara de sub-rede (em notação decimal e em binário).
-        print('')
-        print('  A Mascara da sub-rede em decimal é: ' + str(bintodecEnd(prefixoToMascara(subrede[1]))))
-        print('  A Mascara da sub-rede em binario é: ' + str(prefixoToMascara(subrede[1])))
-        #O tamanho do prefixo da sub-rede.
-        print('')
-        print('  O Tamanho do prefixo da sub-rede é: ' + str(subrede[1]))
-        #O primeiro (i.e., menor) endereço atribuível a uma interface (em notação decimal e em binário).
-        print('')
-        print('  O Primeiro endereço atribuivel é: ' + str(primeiroEnd(endprincipal(subrede[0],bintodecEnd(prefixoToMascara(subrede[1]))))))
-        #O último (i.e., maior) endereço atribuível a uma interface (em notação decimal e em binário).
-        print('')
-        print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(subrede[0]),prefixoToMascara(subrede[1]))))))
-        #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
-        print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(subrede[1])))))
+        modoinfo(subrede[0],subrede[1]) #Chamar o modo de informações para qualquer opção, pois ele será mostrado em todas elas
         if (escolhaMenu == 1):
-          print ("\n  Pronto, não tem mais nada para mostrar, vou encerrar")
+          print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
           os._exit(1) #Sair do programa
         elif (escolhaMenu == 2):
-
-        #else:    
+            tamfixo(subrede[0], subrede[1], tamprefixo)
+        #else: Parte 3    
