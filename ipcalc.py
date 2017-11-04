@@ -214,7 +214,7 @@ def tamfixo(subrede, mascara, prefixo):
             first += i #Agregar o bloco i a variavel de retorno
         cont+=1
 
-def tamVariavel(subrede, mascara, hosts)
+#def tamVariavel(subrede, mascara, hosts)
 
            
 def numhost(mascara):
