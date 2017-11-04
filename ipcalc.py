@@ -1,5 +1,5 @@
 import os #Importado para fechar o programa
-
+import math #Importado para calculos de base numerico
 
 def verificarIPV4orMascara(ip):#Função para verificar se o ip ou a mascara são validos
     if (not('.' in ip)):
@@ -214,7 +214,9 @@ def tamfixo(subrede, mascara, prefixo):
             first += i #Agregar o bloco i a variavel de retorno
         cont+=1
 
-            
+def tamVariavel(subrede, mascara, hosts)
+
+           
 def numhost(mascara):
     mascara = mascara.split('.')
     if '1' in mascara[3]:
@@ -277,11 +279,31 @@ finally: #Se for inteiro, vai vim p cá
             if (int(tamprefixo) < int(subrede[1])):
                     print ("Prefixo maior do que o prefixo da subrede original")  
                     os._exit(1) #Sair do programa
-        '''
         if(escolhaMenu == 3):
-            FAZER VERIFICAÇÃO DA TERCEIRA ESCOLHA.
-        '''
-        #------ Fim das validações ------
+            #FAZER VERIFICAÇÃO DA TERCEIRA ESCOLHA.
+            try:
+                qtdSubredes = int(input("Digite a quantidade de Sub-redes que deseja endereçar: ")) #Digitar a quantidade de subredes desejada
+            except ValueError: #Caso de inserir um valor que nao seja inteiro
+                print("Valor invalido, vou cancelar isso");
+                os._exit(1)#Sair do programa
+            finally:
+                required = {} #Dicionario para armazenar a quantide de hosts para cada rede
+                for sub in range(qtdSubredes):
+                    try:
+                        requiredHosts = int(input("Digite a quantidade de hosts que deseja endereçar para a Sub-rede "+str(sub)+": ")) #Quantidade de hosts que se deseja enderecar para cada subrede
+                        #Soma dois para garantir que os enderecos reservados serao alocados
+                        bitsAddressHosts = math.ceil(math.log2(requiredHosts + 2)) #Calcula a quantidade de bits necessaria para enderecar esses enderecos
+                        bitsEnd = 32 - int(subrede[1]) #Quantidade de bits de endereço disponiveis para a subrede
+                        qtdEnd = math.pow(2,bitsEnd) - 2 #Quantidade de endereços dinponiveis para a subrede
+                        #print(bitsEnd, qtdEnd)
+                    except Exception as e:
+                        raise
+                    finally:
+                        pass
+            #end for
+
+
+        #------ Fim das validações ------#
         modoinfo(subrede[0],subrede[1]) #Chamar o modo de informações para qualquer opção, pois ele será mostrado em todas elas
         if (escolhaMenu == 1):
           print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
@@ -290,4 +312,5 @@ finally: #Se for inteiro, vai vim p cá
           tamfixo(subrede[0], subrede[1], tamprefixo)
           print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
           os._exit(1) #Sair do programa
-        #else: Parte 3    
+        #else:
+            #tamvariavel()
