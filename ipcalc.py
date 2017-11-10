@@ -175,10 +175,10 @@ def modoinfo(subrede, mascara): #Função para exibir o modo de informações
     print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(mascara)))))
     
 def tamfixo(subrede, mascara, prefixo):
-    cont = 1
     newmaxend = maxend(prefixoToMascara(prefixo))
     first = endprincipal(subrede,bintodecEnd(prefixoToMascara(mascara)))
-    while (cont <= numhost(str(prefixoToMascara(prefixo)))):
+    cont = 1
+    while (True):
         print("\n Subrede " + str(cont) +':')
         print('  O Endereço da sub-rede em decimal é: ' + first)
         print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(first))
@@ -201,6 +201,8 @@ def tamfixo(subrede, mascara, prefixo):
         print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(prefixo))))))
         #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
         print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(prefixo)))))
+        if ((str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(prefixo)))))) == (str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(subrede),prefixoToMascara(mascara))))))):
+            break
         aux2 = ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(prefixo)))).split('.')
         if aux2[3]!='255': #Se o ultimo bloco for menor que 255( Flag maximo)
             aux2[3] = str(int(aux2[3])+2)  #Só somar mais um
@@ -208,12 +210,15 @@ def tamfixo(subrede, mascara, prefixo):
             aux2[3] = str(0) #O ultimo bloco vai ser 0 
             aux2[2] = str(int(aux2[2])+1) #O terceiro bloco vai ser ele + 1
         first = '' #Auxiliar para o retorno
+        if int(aux2[3]) > 255:
+            aux2[2] = str(int(aux2[2])+1)
+            aux2[3] = '0'
         for i in aux2: #Pecorrer todo a nova subrede
             if first != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
                 first += '.'
             first += i #Agregar o bloco i a variavel de retorno
         cont+=1
-
+        
 #def tamVariavel(subrede, mascara, hosts)
 
            
@@ -276,6 +281,7 @@ finally: #Se for inteiro, vai vim p cá
                 if not(validarprefixo(tamprefixo)):
                     print ("Esse formato não é permitido, vou cancelar isso")  
                     os._exit(1) #Sair do programa
+                tamprefixo = int(tamprefixo)
             if (int(tamprefixo) < int(subrede[1])):
                     print ("Prefixo maior do que o prefixo da subrede original")  
                     os._exit(1) #Sair do programa
@@ -287,7 +293,7 @@ finally: #Se for inteiro, vai vim p cá
                 print("Valor invalido, vou cancelar isso");
                 os._exit(1)#Sair do programa
             finally:
-                required = {} #Dicionario para armazenar a quantide de hosts para cada rede
+                required = [] #Lista para armazenar a quantide de hosts para cada rede
                 for sub in range(qtdSubredes):
                     try:
                         requiredHosts = int(input("Digite a quantidade de hosts que deseja endereçar para a Sub-rede "+str(sub)+": ")) #Quantidade de hosts que se deseja enderecar para cada subrede
@@ -295,7 +301,7 @@ finally: #Se for inteiro, vai vim p cá
                         bitsAddressHosts = math.ceil(math.log2(requiredHosts + 2)) #Calcula a quantidade de bits necessaria para enderecar esses enderecos
                         bitsEnd = 32 - int(subrede[1]) #Quantidade de bits de endereço disponiveis para a subrede
                         qtdEnd = math.pow(2,bitsEnd) - 2 #Quantidade de endereços dinponiveis para a subrede
-                        #print(bitsEnd, qtdEnd)
+                        print(bitsEnd, qtdEnd)
                     except Exception as e:
                         raise
                     finally:
