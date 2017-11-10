@@ -293,7 +293,7 @@ finally: #Se for inteiro, vai vim p cá
                 print("Valor invalido, vou cancelar isso");
                 os._exit(1)#Sair do programa
             finally:
-                required = [] #Lista para armazenar a quantide de hosts para cada rede
+                required = {} #Dicionario para armazenar a quantide de hosts para cada rede
                 for sub in range(qtdSubredes):
                     try:
                         requiredHosts = int(input("Digite a quantidade de hosts que deseja endereçar para a Sub-rede "+str(sub)+": ")) #Quantidade de hosts que se deseja enderecar para cada subrede
