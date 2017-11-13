@@ -233,10 +233,23 @@ def numhost(mascara):
             return (2**(int(aux))) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives    
     return 2
 
+
+def pegarpot(value): #Função para pegar a potencia desejada (mudar esse nome de função depois !!!!)
+    aux = 0
+    pot = 0
+    while True:
+        aux = 2**pot
+        if value <= aux:
+            break
+        else:
+            pot += 1
+    return pot
+
 print('-----------------Menu-----------------')
 print('  1) Modo de Informações')
 print('  2) Modo de Divisão em Sub-redes de Tamanho Fixo')
 print('  3) Modo de Divisão em Sub-redes de Tamanho Variável')
+
 
 try: #Try para tratar erro, vai tentar isso
     escolhaMenu = int(input("  Entre com a opção desejada: "))
@@ -264,7 +277,7 @@ finally: #Se for inteiro, vai vim p cá
           print ("Isso não é um IPV4")
           os._exit(1) #Sair do programa
         if (prefixo):
-            validarprefixo(subrede[1]) #Validar prefixo
+            validarprefixo(subrede[1]) #Validar prefixoa
         if(mascara): #Validar mascara
             validarmascara(subrede[1])
             subrede[1] = mascaraToPrefixo(dectobinEnd(subrede[1])) #Vamos trabalhar com Prefixo para ficar mais facil, por isso vamos traduzir a mascara para prefixo
@@ -285,38 +298,86 @@ finally: #Se for inteiro, vai vim p cá
             if (int(tamprefixo) < int(subrede[1])):
                     print ("Prefixo maior do que o prefixo da subrede original")  
                     os._exit(1) #Sair do programa
+        
         if(escolhaMenu == 3):
-            #FAZER VERIFICAÇÃO DA TERCEIRA ESCOLHA.
-            try:
-                qtdSubredes = int(input("Digite a quantidade de Sub-redes que deseja endereçar: ")) #Digitar a quantidade de subredes desejada
-            except ValueError: #Caso de inserir um valor que nao seja inteiro
-                print("Valor invalido, vou cancelar isso");
-                os._exit(1)#Sair do programa
+            try: #Testar condições de entrada
+               qtdSubredes = int(input("Digite a quantidade de Sub-redes que deseja endereçar: ")) #Digitar a quantidade de subredes desejada
+            except ValueError: #Se não for inteiro vai acontecer isso
+                print ("Digitou uma opção invalida, vou cancelar isso")
+                os._exit(1) #Sair do programa   
             finally:
-                required = {} #Dicionario para armazenar a quantide de hosts para cada rede
-                for sub in range(qtdSubredes):
-                    try:
-                        requiredHosts = int(input("Digite a quantidade de hosts que deseja endereçar para a Sub-rede "+str(sub)+": ")) #Quantidade de hosts que se deseja enderecar para cada subrede
-                        #Soma dois para garantir que os enderecos reservados serao alocados
-                        bitsAddressHosts = math.ceil(math.log2(requiredHosts + 2)) #Calcula a quantidade de bits necessaria para enderecar esses enderecos
-                        bitsEnd = 32 - int(subrede[1]) #Quantidade de bits de endereço disponiveis para a subrede
-                        qtdEnd = math.pow(2,bitsEnd) - 2 #Quantidade de endereços dinponiveis para a subrede
-                        print(bitsEnd, qtdEnd)
-                    except Exception as e:
-                        raise
-                    finally:
-                        pass
-            #end for
+                required = []
+                for i in range(qtdSubredes):
+                    try: #Testar condições de entrada
+                        requiredHosts = int(input("Digite a quantidade de hosts que deseja endereçar para a Sub-rede "+str(i+1)+": ")) #Quantidade de hosts que se deseja enderecar para cada subrede                    				
+                        required.append(requiredHosts)
+                    except ValueError: #Se for passado um valor invalido, diferente de integer, é falso
+                        print("Você digitou no formato errado ou entrou com algo que não é um numero")                        
+                        print("Errou, estou fechando")
+                        os._exit(1) #Sair do programa
+                    auxsum = sum(required)
+                    if (maxend(str(prefixoToMascara(subrede[1]))) < auxsum):
+                        print("Não é possível fazer a divisão da sub-rede original atendendo ao número de endereços especificados para cada nova sub-rede.")                        
+                        print("Errou, estou fechando")
+                        os._exit(1) #Sair do programa
 
-
-        #------ Fim das validações ------#
+                        
+        #------ Fim das validações ------
         modoinfo(subrede[0],subrede[1]) #Chamar o modo de informações para qualquer opção, pois ele será mostrado em todas elas
         if (escolhaMenu == 1):
           print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
           os._exit(1) #Sair do programa
         elif (escolhaMenu == 2):
-          tamfixo(subrede[0], subrede[1], tamprefixo)
-          print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
-          os._exit(1) #Sair do programa
-        #else:
-            #tamvariavel()
+            tamfixo(subrede[0], subrede[1], tamprefixo)
+            print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
+            os._exit(1) #Sair do programa
+        else: #Parte 3
+            cont = 1
+            while len(required) != 0: #Enquanto required não for vazio
+                max_value = max(required)
+                required.remove(max(required))
+                masc_aux = 32 - pegarpot((max_value + 2))
+                if cont == 1:
+                    first = endprincipal(subrede[0],bintodecEnd(prefixoToMascara(subrede[1])))
+                print('')
+                print('Subrede com ' + str(max_value) +' endereços ')
+                print('  O Endereço da sub-rede em decimal é: ' + first)
+                print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(first))
+                #O endereço de broadcast (em notação decimal e em binário).
+                print('')
+                print('  O Endereço broadcast em decimal é: ' + bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux))))
+                print('  O Endereço broadcast em binario é: ' + broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))
+                #A máscara de sub-rede (em notação decimal e em binário).
+                print('')
+                print('  A Mascara da sub-rede em decimal é: ' + str(bintodecEnd(prefixoToMascara(masc_aux))))
+                print('  A Mascara da sub-rede em binario é: ' + str(prefixoToMascara(masc_aux)))
+                #O tamanho do prefixo da sub-rede.
+                print('')
+                print('  O Tamanho do prefixo da sub-rede é: ' + str(masc_aux))
+                #O primeiro (i.e., menor) endereço atribuível a uma interface (em notação decimal e em binário).
+                print('')
+                print('  O Primeiro endereço atribuivel é: ' + str(primeiroEnd(first)))
+                #O último (i.e., maior) endereço atribuível a uma interface (em notação decimal e em binário).
+                print('')
+                print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux))))))
+                #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
+                print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(masc_aux)))))
+                if ((str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))))) == (str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(subrede[0]),prefixoToMascara(subrede[1]))))))):
+                    break
+                aux2 = ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))).split('.')
+                if aux2[3]!='255': #Se o ultimo bloco for menor que 255( Flag maximo)
+                    aux2[3] = str(int(aux2[3])+2)  #Só somar mais um
+                else: #Se for 255
+                    aux2[3] = str(0) #O ultimo bloco vai ser 0 
+                    aux2[2] = str(int(aux2[2])+1) #O terceiro bloco vai ser ele + 1
+                first = '' #Auxiliar para o retorno
+                if int(aux2[3]) > 255:
+                    aux2[2] = str(int(aux2[2])+1)
+                    aux2[3] = '0'
+                for i in aux2: #Pecorrer todo a nova subrede
+                    if first != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
+                        first += '.'
+                    first += i #Agregar o bloco i a variavel de retorno
+                cont += 1
+            print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
+            os._exit(1) #Sair do programa
