@@ -1,5 +1,4 @@
 import os #Importado para fechar o programa
-import math #Importado para calculos de base numerico
 
 def verificarIPV4orMascara(ip):#Função para verificar se o ip ou a mascara são validos
     if (not('.' in ip)):
@@ -75,8 +74,8 @@ def endprincipal(sub, mascara): #Função para retornar o endereço da subrede
 
 def validarprefixo(prefixo): #Função para fazer a validação do prefixo
     try:
-        if not (( 0 <= int(prefixo) <= 32 )): #VERIFICAR ESSE TAMANHO DE PREFIXO!!!
-            print("prefixo ta zoado")
+        if not (( 8 <= int(prefixo) <= 31 )): #Considerando o tamanho do prefixo sendo do minimo 8( Considerando a possibilidade de classe A) e o maximo 31
+            print("Prefixo está fora do tamanho permetido")
             os._exit(1) #Sair do programa
         else:
             return True
@@ -87,7 +86,7 @@ def validarprefixo(prefixo): #Função para fazer a validação do prefixo
 def validarmascara(mascara): #Função para fazer a validação da mascara
     try:
         if( not verificarIPV4orMascara(subrede[1])): #Se não tiver no formato xxx.xxx.xxx.xxx e se os numeros estão abaixo de 0 ou acima de 255
-            print("Essa mascara ta zoada")
+            print("A mascara está diferente do formato permitido")
             os._exit(1)
         else:
             return True
@@ -124,18 +123,18 @@ def ultimoEnd(mascara): #Função para retornar o ultimo endereço atribuivel
         aux += i #Agregar o bloco i a variavel de retorno
     return aux
 
-def broadcast(sub, mascara):
+def broadcast(sub, mascara): #Função para calcular o broadcast
     aux = ''
-    for i in mascara:
+    for i in mascara: #Realizar operação NOT na mascara
         if i == '0':
             aux += '1'
         elif i == '1':
             aux += '0'
         else:
             aux += '.'
-    retorno = ''
+    retorno = '' #Variavel de retorno
     cont = 0
-    for i in sub:
+    for i in sub: #Realizar um or entre o ip e o not da mascara para achar o broadcast
         if i == '1' or aux[cont] == '1':
             retorno += '1'
         elif i == '.':
@@ -147,7 +146,10 @@ def broadcast(sub, mascara):
 
 def maxend (mascara): #Retornar o numero maximo de endereços atribuives
     aux = mascara.count('0') #contar o numeros de 0 na mascara
-    return (2**(int(aux))-2) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives
+    retorno = (2**(int(aux))-2)
+    if retorno == -1:
+        return 1
+    return (retorno) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives
 
 def modoinfo(subrede, mascara): #Função para exibir o modo de informações
     #O endereço de sub-rede (em notação decimal e em binário).
@@ -218,23 +220,8 @@ def tamfixo(subrede, mascara, prefixo):
                 first += '.'
             first += i #Agregar o bloco i a variavel de retorno
         cont+=1
-        
-#def tamVariavel(subrede, mascara, hosts)
-
-           
-def numhost(mascara):
-    mascara = mascara.split('.')
-    if '1' in mascara[3]:
-        aux = mascara[3].count('1') #contar o numeros de 0 na mascara
-        return (2**(int(aux))) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives    
-    else:
-        if '1' in mascara[2]:
-            aux = mascara[2].count('1') #contar o numeros de 0 na mascara
-            return (2**(int(aux))) #Usar e retornar função (2^n)-2 que é o numero de endereços maximos atribuives    
-    return 2
-
-
-def pegarpot(value): #Função para pegar a potencia desejada (mudar esse nome de função depois !!!!)
+         
+def pegarpot(value): #Função para pegar a potencia desejada
     aux = 0
     pot = 0
     while True:
@@ -244,6 +231,69 @@ def pegarpot(value): #Função para pegar a potencia desejada (mudar esse nome d
         else:
             pot += 1
     return pot
+
+def validartamvariavel(prefixo, hosts): #Função para fazer a validação do tamanho variavel
+    try:
+        auxsum = sum(hosts)#Soma a quantidade de hosts existentes
+        if (maxend(str(prefixoToMascara(prefixo))) < auxsum): #Se numero de hosts requisitados for maior que a quantidade possivel
+            print("Não é possível fazer a divisão da sub-rede original atendendo ao número de endereços especificados para cada nova sub-rede.")                        
+            print("Errou, estou fechando")
+            os._exit(1) #Sair do programa
+        else:
+            return True
+    except ValueError: #Se não for inteiro vai acontecer isso
+        print ("Você não digitou um numero, vou cancelar isso")
+        os._exit(1) #Sair do programa
+
+def tamvariavel(required, sub, prex ):
+    cont = 1
+    while len(required) != 0: #Enquanto required não for vazio
+        max_value = max(required) #Pegar o maior valor dos hosts solicitados
+        required.remove(max(required)) #Retirar o maior valor
+        masc_aux = 32 - pegarpot((max_value + 2)) #Calcular o prefixo da nova rede de tamanho variavel
+        if cont == 1:
+            first = endprincipal(sub,bintodecEnd(prefixoToMascara(prex)))
+        print('')
+        print('Subrede com ' + str(max_value) +' endereços ')
+        print('  O Endereço da sub-rede em decimal é: ' + first)
+        print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(first))
+        #O endereço de broadcast (em notação decimal e em binário).
+        print('')
+        print('  O Endereço broadcast em decimal é: ' + bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux))))
+        print('  O Endereço broadcast em binario é: ' + broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))
+        #A máscara de sub-rede (em notação decimal e em binário).
+        print('')
+        print('  A Mascara da sub-rede em decimal é: ' + str(bintodecEnd(prefixoToMascara(masc_aux))))
+        print('  A Mascara da sub-rede em binario é: ' + str(prefixoToMascara(masc_aux)))
+        #O tamanho do prefixo da sub-rede.
+        print('')
+        print('  O Tamanho do prefixo da sub-rede é: ' + str(masc_aux))
+        #O primeiro (i.e., menor) endereço atribuível a uma interface (em notação decimal e em binário).
+        print('')
+        print('  O Primeiro endereço atribuivel é: ' + str(primeiroEnd(first)))
+        #O último (i.e., maior) endereço atribuível a uma interface (em notação decimal e em binário).
+        print('')
+        print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux))))))
+        #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
+        print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(masc_aux)))))
+        #Se o ultimo endereço da nova rede formada for igual ao ultimo endereço da rede original, acabou de calcular
+        if ((str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))))) == (str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(sub),prefixoToMascara(prex))))))):
+            break
+        aux2 = ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))).split('.') 
+        if aux2[3]!='255': #Se o ultimo bloco for menor que 255( Flag maximo)
+            aux2[3] = str(int(aux2[3])+2)  #Só somar mais um
+        else: #Se for 255
+            aux2[3] = str(0) #O ultimo bloco vai ser 0 
+            aux2[2] = str(int(aux2[2])+1) #O terceiro bloco vai ser ele + 1
+        first = '' #Auxiliar para o retorno
+        if int(aux2[3]) > 255:
+            aux2[2] = str(int(aux2[2])+1)
+            aux2[3] = '0'
+        for i in aux2: #Pecorrer todo a nova subrede
+            if first != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
+                first += '.'
+            first += i #Agregar o bloco i a variavel de retorno
+        cont += 1
 
 print('-----------------Menu-----------------')
 print('  1) Modo de Informações')
@@ -315,11 +365,7 @@ finally: #Se for inteiro, vai vim p cá
                         print("Você digitou no formato errado ou entrou com algo que não é um numero")                        
                         print("Errou, estou fechando")
                         os._exit(1) #Sair do programa
-                    auxsum = sum(required)
-                    if (maxend(str(prefixoToMascara(subrede[1]))) < auxsum):
-                        print("Não é possível fazer a divisão da sub-rede original atendendo ao número de endereços especificados para cada nova sub-rede.")                        
-                        print("Errou, estou fechando")
-                        os._exit(1) #Sair do programa
+                    validartamvariavel(subrede[1],required)
 
                         
         #------ Fim das validações ------
@@ -332,52 +378,6 @@ finally: #Se for inteiro, vai vim p cá
             print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
             os._exit(1) #Sair do programa
         else: #Parte 3
-            cont = 1
-            while len(required) != 0: #Enquanto required não for vazio
-                max_value = max(required)
-                required.remove(max(required))
-                masc_aux = 32 - pegarpot((max_value + 2))
-                if cont == 1:
-                    first = endprincipal(subrede[0],bintodecEnd(prefixoToMascara(subrede[1])))
-                print('')
-                print('Subrede com ' + str(max_value) +' endereços ')
-                print('  O Endereço da sub-rede em decimal é: ' + first)
-                print('  O Endereço da sub-rede em binario é: ' + dectobinEnd(first))
-                #O endereço de broadcast (em notação decimal e em binário).
-                print('')
-                print('  O Endereço broadcast em decimal é: ' + bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux))))
-                print('  O Endereço broadcast em binario é: ' + broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))
-                #A máscara de sub-rede (em notação decimal e em binário).
-                print('')
-                print('  A Mascara da sub-rede em decimal é: ' + str(bintodecEnd(prefixoToMascara(masc_aux))))
-                print('  A Mascara da sub-rede em binario é: ' + str(prefixoToMascara(masc_aux)))
-                #O tamanho do prefixo da sub-rede.
-                print('')
-                print('  O Tamanho do prefixo da sub-rede é: ' + str(masc_aux))
-                #O primeiro (i.e., menor) endereço atribuível a uma interface (em notação decimal e em binário).
-                print('')
-                print('  O Primeiro endereço atribuivel é: ' + str(primeiroEnd(first)))
-                #O último (i.e., maior) endereço atribuível a uma interface (em notação decimal e em binário).
-                print('')
-                print('  O Ultimo endereço atribuivel é: ' + str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux))))))
-                #O número total de endereços atribuíveis a interfaces naquela sub-rede.          
-                print('  O Numero maximo de endereços atribuíves é: ' + str(maxend(str(prefixoToMascara(masc_aux)))))
-                if ((str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))))) == (str(ultimoEnd(bintodecEnd(broadcast(dectobinEnd(subrede[0]),prefixoToMascara(subrede[1]))))))):
-                    break
-                aux2 = ultimoEnd(bintodecEnd(broadcast(dectobinEnd(first),prefixoToMascara(masc_aux)))).split('.')
-                if aux2[3]!='255': #Se o ultimo bloco for menor que 255( Flag maximo)
-                    aux2[3] = str(int(aux2[3])+2)  #Só somar mais um
-                else: #Se for 255
-                    aux2[3] = str(0) #O ultimo bloco vai ser 0 
-                    aux2[2] = str(int(aux2[2])+1) #O terceiro bloco vai ser ele + 1
-                first = '' #Auxiliar para o retorno
-                if int(aux2[3]) > 255:
-                    aux2[2] = str(int(aux2[2])+1)
-                    aux2[3] = '0'
-                for i in aux2: #Pecorrer todo a nova subrede
-                    if first != '': #Adicionar 1 '.' para cada novo bloco depois do primeiro
-                        first += '.'
-                    first += i #Agregar o bloco i a variavel de retorno
-                cont += 1
+            tamvariavel(required, subrede[0], subrede[1])
             print ("\n  Pronto, não tenho mais nada para mostrar, vou encerrar")
             os._exit(1) #Sair do programa
